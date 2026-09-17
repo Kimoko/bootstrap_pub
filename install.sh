@@ -14,6 +14,7 @@ role=""
 assume_yes="false"
 configure_only="false"
 non_interactive="false"
+reset_config="false"
 config_mode=""
 
 work_dir=""
@@ -36,6 +37,7 @@ Options:
   --config-mode MODE     Config mode: wizard or editor; editor reopens existing config
   --yes                   Skip the final confirmation
   --non-interactive       Fail instead of prompting for missing settings
+  --reset-config          Back up the existing config and create a new one
   --configure-only        Prepare/update the config without changing the system
   -h, --help              Show this help
 
@@ -65,6 +67,7 @@ while (($#)); do
     --config-mode) config_mode="${2:-}"; shift 2 ;;
     --yes) assume_yes="true"; shift ;;
     --non-interactive) non_interactive="true"; shift ;;
+    --reset-config) reset_config="true"; shift ;;
     --configure-only) configure_only="true"; shift ;;
     -h|--help) usage; exit 0 ;;
     *) die "Unknown argument: $1" ;;
@@ -76,6 +79,7 @@ done
 [[ "${ref}" =~ ^[A-Za-z0-9_./-]+$ ]] || die "Invalid ref: ${ref}"
 [[ -z "${role}" || "${role}" =~ ^[a-z0-9][a-z0-9_-]*$ ]] || die "Invalid role: ${role}"
 [[ -z "${config_mode}" || "${config_mode}" == "wizard" || "${config_mode}" == "editor" ]] || die "Config mode must be wizard or editor."
+[[ "${reset_config}" != "true" || "${non_interactive}" != "true" ]] || die "--reset-config requires an interactive run."
 [[ "${install_dir}" == /opt/* ]] || die "Install directory must be below /opt."
 [[ "${config_dir}" == /etc/* ]] || die "Config directory must be below /etc."
 
@@ -179,8 +183,13 @@ open_config_editor() {
 }
 
 write_config() {
-  local timezone admin_user admin_pubkey ssh_port extra_tcp enable_docker default_admin="admin"
+  local timezone admin_user admin_pubkey ssh_port extra_tcp enable_docker default_admin="admin" config_backup=""
   install -d -o root -g root -m 0700 "${config_dir}"
+  if [[ "${reset_config}" == "true" && -f "${config_file}" ]]; then
+    config_backup="${config_file}.backup.$(date -u +%Y%m%dT%H%M%SZ)"
+    mv -- "${config_file}" "${config_backup}"
+    warn "Existing config was preserved at ${config_backup}"
+  fi
   if [[ -f "${config_file}" ]]; then
     log "Using existing config: ${config_file}"
     if [[ "${config_mode}" == "editor" ]]; then
