@@ -33,7 +33,7 @@ Options:
   --ref REF              Branch, tag, or commit SHA (default: main)
   --role NAME            Run roles/NAME.sh after the base bootstrap
   --config PATH          Persistent bootstrap config path
-  --config-mode MODE     First-run config mode: wizard or editor
+  --config-mode MODE     Config mode: wizard or editor; editor reopens existing config
   --yes                   Skip the final confirmation
   --non-interactive       Fail instead of prompting for missing settings
   --configure-only        Prepare/update the config without changing the system
@@ -183,6 +183,9 @@ write_config() {
   install -d -o root -g root -m 0700 "${config_dir}"
   if [[ -f "${config_file}" ]]; then
     log "Using existing config: ${config_file}"
+    if [[ "${config_mode}" == "editor" ]]; then
+      open_config_editor
+    fi
     validate_config
     return
   fi
