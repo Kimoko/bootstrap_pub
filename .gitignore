@@ -1,0 +1,14 @@
+# Local configuration and secrets
+bootstrap/.env
+*.key
+*.pem
+*.p12
+*.crt
+*.ovpn
+
+# Editors and OS files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
