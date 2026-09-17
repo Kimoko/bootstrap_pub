@@ -1,6 +1,8 @@
 # bootstrap_pub
 
-## Одна команда
+Публичный, самодостаточный bootstrap для чистых Ubuntu VPS и VM. Репозиторий не содержит токенов, паролей или приватных ключей: персональный конфиг создаётся только на сервере и хранится в `/etc/homelab-bootstrap/bootstrap.env` с правами `0600`.
+
+## Установка одной командой
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Kimoko/bootstrap_pub/main/install.sh | sudo bash
@@ -12,63 +14,46 @@ curl -fsSL https://raw.githubusercontent.com/Kimoko/bootstrap_pub/main/install.s
 sudo apt-get update && sudo apt-get install -y --no-install-recommends curl ca-certificates && curl -fsSL https://raw.githubusercontent.com/Kimoko/bootstrap_pub/main/install.sh | sudo bash
 ```
 
-Launcher:
-
-1. без эха запрашивает fine-grained GitHub token;
-2. загружает `install.sh` из приватного bootstrap;
-3. проверяет Bash-синтаксис загруженного файла;
-4. передаёт управление приватному установщику;
-5. удаляет временный токен и файлы при завершении.
-
-Токен не передаётся в аргументах процессов и не записывается в shell history.
-
-## Права GitHub token
-
-Создайте короткоживущий fine-grained token:
-
-- Repository permissions → Contents: `Read-only`;
-- остальные разрешения: `No access`;
-- expiration: минимально подходящий срок.
-
-Launcher отправляет токен только на `raw.githubusercontent.com`; приватный
-установщик использует его для чтения архива через `api.github.com`.
+GitHub token и Deploy Key не требуются.
 
 ## Настройка перед установкой
 
-При первом запуске установщик предложит один из вариантов:
+При первом запуске выберите:
 
 - `wizard` — заполнить параметры вопросами в консоли;
-- `editor` — открыть полный `.env` в `nano` или `vi`.
+- `editor` — открыть полный конфиг в `nano` или `vi`.
 
-Конфиг сохраняется отдельно от исходников:
-
-```text
-/etc/homelab-bootstrap/bootstrap.env
-```
-
-Он принадлежит `root:root`, имеет права `0600`, валидируется до изменения SSH,
-firewall, пакетов или служб и не перезаписывается при повторном запуске.
-
-Можно сразу выбрать редактор:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/Kimoko/bootstrap_pub/main/install.sh | sudo bash -s -- --config-mode editor
-```
-
-Или консольный мастер:
+Можно указать режим сразу:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Kimoko/bootstrap_pub/main/install.sh | sudo bash -s -- --config-mode wizard
 ```
 
-## Фиксация версии
-
-Для воспроизводимого восстановления используйте тег приватного bootstrap:
+или:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Kimoko/bootstrap_pub/main/install.sh | sudo bash -s -- --ref v1.0.0
+curl -fsSL https://raw.githubusercontent.com/Kimoko/bootstrap_pub/main/install.sh | sudo bash -s -- --config-mode editor
 ```
 
-Первый запуск следует выполнять на тестовой VM: приватный bootstrap управляет
-пакетами, SSH, UFW и systemd-службами и может повлиять на доступность сервера.
+Перед применением установщик проверяет конфиг и показывает итоговый план. Чтобы только создать и проверить конфиг:
 
+```bash
+curl -fsSL https://raw.githubusercontent.com/Kimoko/bootstrap_pub/main/install.sh | sudo bash -s -- --configure-only
+```
+
+## Что устанавливается
+
+Bootstrap обновляет Ubuntu, создаёт администратора, устанавливает его публичный SSH-ключ, настраивает OpenSSH, UFW, fail2ban, unattended-upgrades и базовый sysctl hardening. Docker и swapfile включаются настройками.
+
+Исходники устанавливаются в `/opt/homelab-bootstrap`. Существующий конфиг при повторном запуске не перезаписывается.
+
+> Сначала запускайте на тестовой VM. Bootstrap меняет пакеты, SSH, firewall и systemd-службы и может повлиять на доступность сервера.
+
+## Секреты
+
+Не добавляйте в репозиторий:
+
+- реальные `.env`;
+- пароли и токены;
+- приватные SSH-ключи;
+- сертификаты и VPN-конфиги с ключами.
