@@ -26,7 +26,6 @@ Launcher:
 
 Создайте короткоживущий fine-grained token:
 
-- Repository access: только `Kimoko/homelab-bootstrap`;
 - Repository permissions → Contents: `Read-only`;
 - остальные разрешения: `No access`;
 - expiration: минимально подходящий срок.
