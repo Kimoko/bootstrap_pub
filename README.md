@@ -35,6 +35,12 @@ curl -fsSL https://raw.githubusercontent.com/Kimoko/bootstrap_pub/main/install.s
 curl -fsSL https://raw.githubusercontent.com/Kimoko/bootstrap_pub/main/install.sh | sudo bash -s -- --config-mode editor
 ```
 
+Если нужно начать настройку заново без редактора, старый конфиг будет сохранён в backup, а консольный мастер задаст вопросы повторно:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Kimoko/bootstrap_pub/main/install.sh | sudo bash -s -- --reset-config --config-mode wizard
+```
+
 Перед применением установщик проверяет конфиг и показывает итоговый план. Чтобы только создать и проверить конфиг:
 
 ```bash
