@@ -1,9 +1,5 @@
 # bootstrap_pub
 
-Публичная безопасная точка входа для приватного репозитория
-[`Kimoko/homelab-bootstrap`](https://github.com/Kimoko/homelab-bootstrap).
-Репозиторий не содержит конфигурацию серверов, токены, пароли или ключи.
-
 ## Одна команда
 
 ```bash
