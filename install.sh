@@ -15,6 +15,7 @@ assume_yes="false"
 configure_only="false"
 non_interactive="false"
 reset_config="false"
+edit_config="false"
 config_mode=""
 
 work_dir=""
@@ -37,6 +38,7 @@ Options:
   --config-mode MODE     Config mode: wizard or editor; editor reopens existing config
   --yes                   Skip the final confirmation
   --non-interactive       Fail instead of prompting for missing settings
+  --edit-config           Open and validate the existing config without applying
   --reset-config          Back up the existing config and create a new one
   --configure-only        Prepare/update the config without changing the system
   -h, --help              Show this help
@@ -67,6 +69,7 @@ while (($#)); do
     --config-mode) config_mode="${2:-}"; shift 2 ;;
     --yes) assume_yes="true"; shift ;;
     --non-interactive) non_interactive="true"; shift ;;
+    --edit-config) edit_config="true"; shift ;;
     --reset-config) reset_config="true"; shift ;;
     --configure-only) configure_only="true"; shift ;;
     -h|--help) usage; exit 0 ;;
@@ -80,6 +83,7 @@ done
 [[ -z "${role}" || "${role}" =~ ^[a-z0-9][a-z0-9_-]*$ ]] || die "Invalid role: ${role}"
 [[ -z "${config_mode}" || "${config_mode}" == "wizard" || "${config_mode}" == "editor" ]] || die "Config mode must be wizard or editor."
 [[ "${reset_config}" != "true" || "${non_interactive}" != "true" ]] || die "--reset-config requires an interactive run."
+[[ "${edit_config}" != "true" || "${reset_config}" != "true" ]] || die "--edit-config and --reset-config cannot be used together."
 [[ "${install_dir}" == /opt/* ]] || die "Install directory must be below /opt."
 [[ "${config_dir}" == /etc/* ]] || die "Config directory must be below /etc."
 
@@ -287,6 +291,9 @@ install_source() {
   printf 'repository=%s\nref=%s\ninstalled_at=%s\n' \
     "${repository}" "${ref}" "$(date --iso-8601=seconds)" >"${install_dir}/.installed-source"
   chmod 0644 "${install_dir}/.installed-source"
+  chmod 0755 "${install_dir}/install.sh"
+  install -d -o root -g root -m 0755 /usr/local/sbin
+  ln -sfn "${install_dir}/install.sh" /usr/local/sbin/homelab-bootstrap
 }
 
 run_bootstrap() {
@@ -299,6 +306,13 @@ run_bootstrap() {
 }
 
 main() {
+  if [[ "${edit_config}" == "true" ]]; then
+    [[ -f "${config_file}" ]] || die "Config does not exist yet: ${config_file}"
+    open_config_editor
+    validate_config
+    log "Configuration updated. Run 'sudo homelab-bootstrap' to apply it."
+    return
+  fi
   install_prerequisites
   download_repository
   write_config
