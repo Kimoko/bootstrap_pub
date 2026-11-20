@@ -47,6 +47,30 @@ curl -fsSL https://raw.githubusercontent.com/Kimoko/bootstrap_pub/main/install.s
 curl -fsSL https://raw.githubusercontent.com/Kimoko/bootstrap_pub/main/install.sh | sudo bash -s -- --configure-only
 ```
 
+## Изменение и повторное применение
+
+После первой успешной установки доступна локальная команда `homelab-bootstrap`.
+
+Изменить существующий конфиг через `nano` или `vi`, проверить его и ничего пока не применять:
+
+```bash
+sudo homelab-bootstrap --edit-config
+```
+
+Создать конфиг заново через консольный мастер (старый файл сохранится с суффиксом `.backup.<дата>`):
+
+```bash
+sudo homelab-bootstrap --reset-config --config-mode wizard
+```
+
+Повторно скачать актуальный bootstrap и применить сохранённый конфиг:
+
+```bash
+sudo homelab-bootstrap
+```
+
+Перед повторным применением снова показывается план и требуется подтверждение.
+
 ## Что устанавливается
 
 Bootstrap обновляет Ubuntu, создаёт администратора, устанавливает его публичный SSH-ключ, настраивает OpenSSH, UFW, fail2ban, unattended-upgrades и базовый sysctl hardening. Docker и swapfile включаются настройками.
